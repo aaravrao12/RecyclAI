@@ -1,6 +1,6 @@
 # Smart-Waste-Management
-**Project Description
-**This project is a deep learning-based classifier designed to automatically sort recyclable and non-recyclable waste, with a specific focus on minimizing contamination. Built on a convolutional neural network (CNN) architecture, the classifier is trained to accurately differentiate between various waste types, classifying items into three main categories: recyclable, non-recyclable, and contaminated recyclables. By automating the sorting process, this classifier aims to improve the efficiency and accuracy of waste management systems, contributing to better recycling practices and reduced contamination rates in recycling facilities.
+# Project Description
+This project is a deep learning-based classifier designed to automatically sort recyclable and non-recyclable waste, with a specific focus on minimizing contamination. Built on a convolutional neural network (CNN) architecture, the classifier is trained to accurately differentiate between various waste types, classifying items into three main categories: recyclable, non-recyclable, and contaminated recyclables. By automating the sorting process, this classifier aims to improve the efficiency and accuracy of waste management systems, contributing to better recycling practices and reduced contamination rates in recycling facilities.
 
 Project Goals
 Reduce Contamination in Recyclables: Improperly sorted recyclables, often contaminated with food waste or non-recyclable materials, can spoil entire batches, making recycling efforts less efficient. This project aims to solve this problem by distinguishing contaminated recyclables from clean ones.
