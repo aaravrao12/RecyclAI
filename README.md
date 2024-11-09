@@ -18,5 +18,6 @@ Reduce Contamination in Recyclables: Improperly sorted recyclables, often contam
 # Future Work
 To enhance the model’s performance and applicability, future improvements could include:
 
-Deploying in Real-World Applications: Testing the classifier in real-world environments, such as at a recycling facility, to evaluate and refine its performance.
-Create a smart bin, which would automatically separate materials into 3 sections. It would work with this model integrated into a sensor
+1. Deploying in Real-World Applications: Testing the classifier in real-world environments, such as at a recycling facility, to evaluate and refine its performance.
+
+2. Create a smart bin, which would automatically separate materials into 3 sections. It would work with this model integrated into a sensor
