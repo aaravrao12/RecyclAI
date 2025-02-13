@@ -110,7 +110,6 @@ class CustomLoggingCallback(Callback):
               f"accuracy: {logs.get('accuracy'):.4f} - loss: {logs.get('loss'):.4f} - "
               f"val_accuracy: {logs.get('val_accuracy'):.4f} - val_loss: {logs.get('val_loss'):.4f}")
 
-# Define focal loss function (optional)
 def focal_loss(gamma=2., alpha=0.25):
     def focal_loss_fixed(y_true, y_pred):
         epsilon = K.epsilon()
@@ -164,8 +163,7 @@ print(f"Test Accuracy: {accuracy:.4f}")
 # Make predictions and create confusion matrix
 y_pred = np.argmax(model.predict(X_test), axis=1)
 
-# Convert y_test from one-hot encoding to class indices if necessary
-if len(y_test.shape) > 1:  # Check if y_test is one-hot encoded
+if len(y_test.shape) > 1:
     y_test = np.argmax(y_test, axis=1)
 
 # Create confusion matrix
@@ -180,6 +178,7 @@ plt.show()
 # Generate classification report
 class_report = classification_report(y_test, y_pred, target_names=le.classes_)
 print(class_report)
+
 # Visualizations
 # 1. Bar Graph of Class Distribution
 labels = le.classes_
