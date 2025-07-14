@@ -1,3 +1,5 @@
+// This page is the camera capture and prediction page. After the image is captured, it gets sent to the Flask backend which is on an EC2 instance for prediction with the TFLite model. 
+// Side note: the barcode functionality is not fully integrated yet, so if you can, delete all instances of it
 import { Ionicons } from '@expo/vector-icons';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import * as Haptics from 'expo-haptics';
@@ -138,14 +140,14 @@ export default function NextPage() {
     }
   }, []);
 
-  // Request barcode scanner permissions
+  // Request barcode scanner permissions (will not appear as it is not fully implemented)
   useEffect(() => {
     const requestBarcodePermissions = async () => {
       if (!isWeb) {
 
         setBarcodePermission(true); // Temporary fallback
       } else {
-        // For web, we'll use the same camera stream for barcode scanning
+        // For web, we'll use the same camera stream for barcode scanning (although barcode is not fully integrated yet)
         setBarcodePermission(true);
       }
     };
@@ -224,7 +226,7 @@ export default function NextPage() {
   useEffect(() => {
     const requestCameraPermission = async () => {
       try {
-        // Use different constraints for mobile vs desktop
+        // Use different constraints for mobile vs desktop (dynamically adjust based on screen size)
         const constraints = isMobile 
           ? { 
               video: { 
@@ -358,7 +360,7 @@ export default function NextPage() {
     setIsBarcodeLoading(true);
     
     try {
-      // Call API to classify the barcode
+      // Call API to classify the barcode (remove this cause barcode is not fully implemented yet with Expo)
       const serverUrl = `${config.apiUrl}/classify-barcode`;
       console.debug('[DEBUG] Sending barcode to:', serverUrl);
       
@@ -396,7 +398,7 @@ export default function NextPage() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     
-    // Animate barcode button press
+    // Animate barcode button press (remove this as barcode is not fully implemented)
     Animated.sequence([
       Animated.timing(barcodeButtonScaleAnim, {
         toValue: 0.9,
@@ -484,6 +486,8 @@ export default function NextPage() {
       formData.append('image', file);
       console.debug('[DEBUG] FormData appended with image Blob');
 
+      // Construct the full prediction API URL and send a POST request with the image file as FormData.
+      // Expects a JSON response containing the predicted label and confidence score.
       const serverUrl = `${config.apiUrl}/predict`;
       console.debug('[DEBUG] Sending fetch POST to:', serverUrl);
 
