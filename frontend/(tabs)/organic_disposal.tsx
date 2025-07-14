@@ -1,3 +1,4 @@
+// When the model classifies an item as Organic, it takes the user to this page where it shows them how to dispose of their item correctly
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
