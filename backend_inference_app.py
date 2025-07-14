@@ -16,7 +16,7 @@ Load labels exactly as in your script
 labels = ['EWaste', 'NonRecyclable', 'Organic', 'Recyclable', 'StoreDropOff']
 
 Load TFLite model
-MODEL_PATH = 'FiveClassesChips.tflite'
+MODEL_PATH = 'waste_classifier_se.tflite'
 print(f"[DEBUG] Loading TFLite model from: {MODEL_PATH}")
 interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
 interpreter.allocate_tensors()
