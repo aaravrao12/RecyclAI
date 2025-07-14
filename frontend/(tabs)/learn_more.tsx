@@ -1,3 +1,4 @@
+// This page allows the user to learn more about the app such as impact, goals, etc
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
