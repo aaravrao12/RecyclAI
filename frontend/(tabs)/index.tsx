@@ -1,3 +1,4 @@
+// This is the screen that gives basic info of the app and allows you to either sign in/sign up or try demo as a guest
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
