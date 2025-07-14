@@ -1,25 +1,27 @@
-# Smart Bin Project
+# RecyclAI Project
 
 ## Project Description
 
-This project is a deep learning-based classifier designed to automatically sort recyclable and non-recyclable waste, with a specific focus on minimizing contamination. Built on a convolutional neural network (CNN) architecture, the classifier is trained to accurately differentiate between various waste types, classifying items into three main categories: recyclable, non-recyclable, and contaminated recyclables. By automating the sorting process, this classifier aims to improve the efficiency and accuracy of waste management systems, contributing to better recycling practices and reduced contamination rates in recycling facilities.
-
-Additionally, this project integrates Google Cloud Vision API to assist in improving model performance by providing additional image recognition capabilities. While the API helps in refining classification, the core classification process is powered by a custom CNN model trained on waste images.
+RecyclAI is a full-stack waste classification app built using React (TSX) for the frontend and Python Flask for the backend. It leverages a custom-trained CNN model to classify waste items into five categories: Recyclable, Non-Recyclable, Organic, E-Waste, and a unique Store Drop-Off class for LDPE plastics like bags and film. The model is optimized with TensorFlow Lite for close to real-time inference, achieving over 95% accuracy on common household waste. RecyclAI reduces recycling contamination and helps users make informed, sustainable disposal choices through an intuitive interface and low-latency performance.
 
 ## Project Goals
 
-- Reduce Contamination in Recyclables: Improperly sorted recyclables, often contaminated with food waste or non-recyclable materials, can spoil entire batches, making recycling efforts less efficient. This project aims to solve this problem by distinguishing contaminated recyclables from clean ones.
+- Enable users to accurately classify waste into five distinct categories—Recyclable, Non-Recyclable, Organic, E-Waste, and Store Drop-Off—using real-time AI image recognition, with a target classification accuracy of ≥99% on household materials.
 
-- Enhance Waste Sorting Efficiency: By accurately classifying waste items, this classifier can improve the speed and efficiency of waste sorting processes in recycling facilities and other waste management setups.
+- Minimize the rate of incorrectly sorted items entering municipal recycling streams by identifying non-recyclables and LDPE plastics that require special handling, ultimately supporting cleaner, more efficient material recovery processes.
 
-- Promote Environmentally Friendly Practices: Effective waste sorting is essential to the recycling process. By aiding the sorting process, this classifier encourages better resource management and a positive environmental impact.
+- Build a responsive, low-latency web and mobile application using React (TSX) and Flask, integrated with a TensorFlow Lite backend, capable of running AI inference locally or via cloud API to serve both consumers and municipalities at scale.
 
 ## How It Works
 
-1. Image Processing: The classifier uses images of waste items as input. Each item is scanned or photographed and then analyzed by the CNN model.
+1. Step 1: User Uses Camera to capture image
+ - User accesses the React-based app via web or mobile.
+ - Takes a live photo of the waste item.
+ - Frontend ensures image format and resolution are valid before submission.
 
-2. CNN-Based Classification: The deep learning model, based on a CNN architecture, has been trained on a dataset of images categorized into three classes: recyclable, non-recyclable, and contaminated recyclables. The CNN model identifies patterns and features unique to each type of waste, making it capable of classifying new images accurately.
-
+2. Image Sent to Backend APIThe CNN model identifies patterns and features unique to each type of waste, making it capable of classifying new images accurately.
+ - The image is sent to the Python Flask backend via a secure API call (POST /classify).
+ - 
 3. Google Cloud Vision API Integration: To enhance model performance, the system uses the Google Cloud Vision API to detect object labels in images. The detected labels help refine classification, complementing the CNN’s predictions.
 
 4. Real-Time Image Capture: The project also includes a webcam-based image capture system, allowing users to take images of waste items and analyze them instantly. The system listens for user input (e.g., pressing the spacebar) to trigger image capture and classification.
