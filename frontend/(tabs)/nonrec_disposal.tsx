@@ -1,3 +1,4 @@
+// When the image is predicted as NonRecyclable, it navigates to this page to guide the user on how to dispose of their item correctly
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,7 +21,7 @@ const { width, height } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 
-// Responsive breakpoints
+// Responsive breakpoints (dynamically adjust all components of page based on size of screen)
 const isSmallScreen = width < 380;
 const isMediumScreen = width >= 380 && width < 768;
 const isLargeScreen = width >= 768;
@@ -234,7 +235,7 @@ export default function NonRecDisposal() {
     // On web, open in new tab, on mobile open in default maps app
     const searchQuery = "waste disposal facility near me";
     if (isWeb) {
-      // Corrected Google Maps URL for web search
+      // Google Maps URL for web search
       Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`);
     } else {
       const mapsUrl = Platform.select({
@@ -245,7 +246,7 @@ export default function NonRecDisposal() {
     }
   };
 
-  // Enhanced back button handler
+  // back button handler
   const handleBackPress = () => {
     // Provide haptic feedback
     if (isWeb) {
