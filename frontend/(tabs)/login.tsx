@@ -1,7 +1,4 @@
-// Professional, Dynamic, and Responsive Authentication Screen
-// FIXED VERSION - Compilation errors resolved
-// Optimized for all device sizes (web and mobile)
-
+// This page allows the user to sign in or sign up to use the app. It connects to Firebase on the backend and logs all user data on Firestore databse
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
