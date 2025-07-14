@@ -12,6 +12,30 @@ RecyclAI is a full-stack waste classification app built using React (TSX) for th
 
 - Build a responsive, low-latency web and mobile application using React (TSX) and Flask, integrated with a TensorFlow Lite backend, capable of running AI inference locally or via cloud API to serve both consumers and municipalities at scale.
 
+## Technologies and Materials Used
+
+1. Frontend
+ - React (TSX) – Type-safe UI framework for scalable, component-based development
+ - Tailwind CSS – Utility-first styling for responsive, accessible UI
+ - Fetch API – Native JavaScript method for handling asynchronous REST calls between client and server.
+
+2. Backend
+ - Python Flask – Lightweight WSGI-based web framework powering the REST API
+ - Flask-CORS – Enables secure cross-origin requests from your frontend at recycl-ai.com
+ - TensorFlow Lite (TFLite) – Executes a pre-trained 5-class CNN model for low-latency inference
+ - NumPy – Handles tensor manipulation, prediction arrays, and model input formatting
+ - Pillow (PIL) – Decodes and processes uploaded image files for model input
+ - EfficientNet Preprocessing – Matches training-time normalization for CNN input consistency
+
+3. Cloud and Hosting
+ - AWS EC2 – Hosting Flask backend and deploying TFLite inference pipeline
+ - Netlify - Hosting frontend web app with CI/CD pipeline
+
+4. Machine Learning / Model Development
+ - Custom Convolutional Neural Network (CNN) – Trained on labeled dataset of 5 waste categories
+ - TensorFlow/Keras – Model architecture, training, and TFLite conversion
+ - Google Colab / Jupyter Notebook – Model experimentation, prototyping, and data visualization
+
 ## How It Works
 
 1. Step 1: User Uses Camera to capture image
@@ -21,18 +45,35 @@ RecyclAI is a full-stack waste classification app built using React (TSX) for th
 
 2. Image Sent to Backend APIThe CNN model identifies patterns and features unique to each type of waste, making it capable of classifying new images accurately.
  - The image is sent to the Python Flask backend via a secure API call (POST /classify).
- - 
-3. Google Cloud Vision API Integration: To enhance model performance, the system uses the Google Cloud Vision API to detect object labels in images. The detected labels help refine classification, complementing the CNN’s predictions.
+ - Flask processes the image (resizing, normalization, etc.) and prepares it for model inference.
 
-4. Real-Time Image Capture: The project also includes a webcam-based image capture system, allowing users to take images of waste items and analyze them instantly. The system listens for user input (e.g., pressing the spacebar) to trigger image capture and classification.
+3. TensorFlow Lite Model Runs Inference
+ - The Flask server loads the TFLite CNN model, optimized for fast, lightweight predictions.
+ - The model classifies the item into one of five classes:
+    - ♻️ Recyclable
+    - 🚫 Non-Recyclable
+    - 🌿 Organic
+    - 💻 E-Waste
+    - 🛍️ Store Drop-Off (LDPE plastic)
 
-5. Output and Recommendations: After classification, the system provides output indicating whether the item is recyclable, non-recyclable, or contaminated. This output can be used in various applications, such as in smart bins or recycling facility sorting mechanisms, to direct the item to the appropriate processing stream.
+4. Prediction Returned to Frontend
+ - The backend returns the predicted class.
+ - Backend may log anonymized prediction data for future model improvement.
+
+6. User Sees Feedback + Sorting Guidance
+ - The React frontend displays:
+    - Predicted category
+    - Sorting instructions (e.g., “Place this in your recycling bin,” or “Drop off at retail store”)
+ - User receives visual confirmation and learns correct disposal methods
 
 ## Future Work
 
-To enhance the model’s performance and applicability, future improvements could include:
+1. Mobile App Deployment (iOS/Android)
+ - Port RecyclAI to native mobile platforms using React Native or Flutter, enabling broader access to real-time waste classification on-the-go. Integrate TensorFlow Lite for on-device inference without internet dependency.
 
-- Deploying in Real-World Applications: Testing the classifier in real-world environments, such as at a recycling facility, to evaluate and refine its performance.
+2. Reinforcement Learning with User Feedback
+ - Implement a feedback loop where users can correct model predictions, storing verified inputs to retrain and fine-tune the CNN over time. This will improve accuracy on ambiguous or rare waste types (e.g., black plastics, mixed materials).
 
-- Creating a Smart Bin: Developing a smart bin that would automatically separate materials into three sections. The bin would integrate this model with a sensor to perform real-time classification and sorting of waste items.
+3. Localization & Global Material Support
+ - Expand training data and label taxonomy to support regional recycling standards (e.g., EU vs. US vs. India). Integrate support for multilingual interfaces and region-specific sorting instructions.
 
