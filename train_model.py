@@ -16,15 +16,20 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, Callback,
 from tensorflow.keras.regularizers import l2
 from sklearn.utils.class_weight import compute_class_weight
 
-# PATHS
-base_dir = "/data"
+# --- Paths: Mount Google Drive or upload dataset ---
+from google.colab import drive
+drive.mount('/content/drive')
+
+# Update these paths to your Google Drive dataset folders
+base_dir = "/content/drive/MyDrive/dataset"
 train_dir = os.path.join(base_dir, "train")
 val_dir = os.path.join(base_dir, "val")
 test_dir = os.path.join(base_dir, "test")
-results_dir = "/results"
+
+results_dir = "/content/drive/MyDrive/results"
 os.makedirs(results_dir, exist_ok=True)
 
-# REMOVE CORRUPT IMAGES
+# --- Remove corrupt images ---
 def is_image_corrupt(path):
     try:
         with Image.open(path) as img:
@@ -50,12 +55,13 @@ clean_directory(train_dir)
 clean_directory(val_dir)
 clean_directory(test_dir)
 
-# PARAMETERS
+# --- Parameters ---
 img_size = (224, 224)
 batch_size = 32
 num_classes = 5
+epochs = 10
 
-# DATA AUGMENTATION
+# --- Data augmentation ---
 datagen_train = ImageDataGenerator(
     preprocessing_function=tf.keras.applications.efficientnet.preprocess_input,
     rotation_range=25,
@@ -71,7 +77,7 @@ datagen_val_test = ImageDataGenerator(
     preprocessing_function=tf.keras.applications.efficientnet.preprocess_input
 )
 
-# LOAD DATA
+# --- Load data ---
 train_gen = datagen_train.flow_from_directory(
     train_dir, target_size=img_size, batch_size=batch_size, class_mode='categorical'
 )
@@ -82,7 +88,7 @@ test_gen = datagen_val_test.flow_from_directory(
     test_dir, target_size=img_size, batch_size=batch_size, class_mode='categorical', shuffle=False
 )
 
-# CLASS WEIGHTS
+# --- Compute class weights ---
 class_weights = compute_class_weight(
     class_weight='balanced',
     classes=np.unique(train_gen.classes),
@@ -90,7 +96,7 @@ class_weights = compute_class_weight(
 )
 class_weights_dict = dict(enumerate(class_weights))
 
-# CALLBACKS
+# --- Callbacks ---
 def lr_scheduler(epoch, lr):
     return lr * 0.7 if epoch > 0 and epoch % 5 == 0 else lr
 
@@ -102,14 +108,14 @@ class CustomLoggingCallback(Callback):
         duration = time.time() - self.epoch_start_time
         logs = logs or {}
         print(f"Epoch {epoch+1}/{self.params['epochs']} - {duration:.0f}s - "
-              f"accuracy: {logs.get('accuracy'):.4f} - loss: {logs.get('loss'):.4f} - "
-              f"val_accuracy: {logs.get('val_accuracy'):.4f} - val_loss: {logs.get('val_loss'):.4f}")
+              f"accuracy: {logs.get('accuracy', 0):.4f} - loss: {logs.get('loss', 0):.4f} - "
+              f"val_accuracy: {logs.get('val_accuracy', 0):.4f} - val_loss: {logs.get('val_loss', 0):.4f}")
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 model_checkpoint = ModelCheckpoint(os.path.join(results_dir, 'best_model.keras'), save_best_only=True, monitor='val_loss', mode='min')
 lr_schedule = LearningRateScheduler(lr_scheduler)
 
-# SE BLOCK DEFINITION
+# --- SE block ---
 def se_block(input_tensor, reduction=16):
     channels = input_tensor.shape[-1]
     se = tf.keras.layers.GlobalAveragePooling2D()(input_tensor)
@@ -119,14 +125,14 @@ def se_block(input_tensor, reduction=16):
     x = multiply([input_tensor, se])
     return x
 
-# MODEL WITH SE BLOCK
+# --- Model definition ---
 input_tensor = Input(shape=(224, 224, 3))
 base_model = EfficientNetB0(weights='imagenet', include_top=False, input_tensor=input_tensor)
 for layer in base_model.layers[:-30]:
     layer.trainable = False
 
 x = base_model.output
-x = se_block(x)  # SE block is added
+x = se_block(x)
 x = Dropout(0.3)(x)
 x = GlobalAveragePooling2D()(x)
 x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(x)
@@ -142,16 +148,16 @@ model.compile(
     metrics=['accuracy']
 )
 
-# TRAIN
+# --- Train ---
 history = model.fit(
     train_gen,
     validation_data=val_gen,
-    epochs=10,
+    epochs=epochs,
     callbacks=[early_stopping, model_checkpoint, lr_schedule, CustomLoggingCallback()],
     class_weight=class_weights_dict
 )
 
-# CONVERT TO TFLITE
+# --- Convert to TFLite ---
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 tflite_model = converter.convert()
 
