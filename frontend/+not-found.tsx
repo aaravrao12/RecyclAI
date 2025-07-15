@@ -1,3 +1,4 @@
+// If user clicks a button/page that does not exist yet, it brings them to this page (it should not do this for the app as all pages should be functional)
 import { Link, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
