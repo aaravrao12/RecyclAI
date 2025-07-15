@@ -1,3 +1,4 @@
+// When the model classifes the item as StoreDropOff (for items like LDPE bags), it brings the user to this screen
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -263,7 +264,7 @@ export default function StoreDisposal() {
         useNativeDriver: true
       })
     ]).start();
-    
+    // When user clicks find nearest stores button, it opens google maps from the below link to find stores that accept these types of bags (prolly LDPE)
     const searchQuery = "stores that accept plastic bags for recycling near me";
     if (isWeb) {
       Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`);
