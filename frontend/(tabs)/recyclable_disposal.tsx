@@ -1,3 +1,4 @@
+// When the model classifies the item as Recyclable, the user comes to this page to see how to dispose of their item correctly
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -233,7 +234,7 @@ export default function RecyclableDisposal() {
     // On web, open in new tab, on mobile open in default maps app
     const searchQuery = "recycling center near me";
     if (isWeb) {
-      // Corrected Google Maps URL for web search
+      // Google Maps URL for web search
       Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchQuery)}`);
     } else {
       const mapsUrl = Platform.select({
