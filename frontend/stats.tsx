@@ -1,3 +1,6 @@
+// This page shows each user's unique statistics such as items recycled, trees saved, energy saved, etc. 
+// It does this by connecting to Firestore database to get user's unique data
+// This works on mobile, not computer (the points system and stats)
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
