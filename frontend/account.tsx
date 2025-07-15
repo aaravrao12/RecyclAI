@@ -1,4 +1,5 @@
 //  This is the home page
+// This allows the user to either go to capture image page, learn more, stats, play games, etc
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
