@@ -28,7 +28,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 
-// Enhanced types for better TypeScript support
+// types for better TypeScript support
 type IconName =
   | 'recycle'
   | 'leaf'
@@ -100,7 +100,7 @@ const { width, height } = Dimensions.get('window');
 const pixelRatio = PixelRatio.get();
 const isWeb = Platform.OS === 'web';
 
-// Enhanced breakpoint system
+//breakpoint system
 const breakpoints = {
   xs: 0,      // Extra small devices (phones, 0px and up)
   sm: 576,    // Small devices (landscape phones, 576px and up)
@@ -127,7 +127,7 @@ const isDesktop = deviceType === 'lg' || deviceType === 'xl' || deviceType === '
 // Performance-optimized particle count
 const PARTICLE_COUNT = isMobile ? 12 : isTablet ? 20 : 35;
 
-// Enhanced color scheme hook with system detection
+// color scheme hook with system detection
 const useColorScheme = () => {
   const systemColorScheme = _useColorScheme();
   const [theme, setTheme] = useState(systemColorScheme || 'light');
@@ -180,13 +180,14 @@ const fetchUserPoints = async (userId: string): Promise<number> => {
 };
 
 // Calculate environmental impact statistics based on user points
+// Btw the numbers displayed are estimates as the equation/formula may not be 100% accurate
 const calculateStats = (points: number) => {
   const itemsCaptured = Math.floor(points / 5);
   const co2Diverted = (itemsCaptured * 0.5).toFixed(1); // Estimate 0.5 kg CO2 per item
-  const treesEquivalent = (points * 0.00025).toFixed(3); // Updated formula
-  const energySaved = (points * 0.1).toFixed(1); // Updated formula
-  const waterSaved = (points * 2).toFixed(1); // Updated formula
-  const wasteReduced = parseFloat((points * 0.008).toFixed(3)); // Updated formula
+  const treesEquivalent = (points * 0.00025).toFixed(3); 
+  const energySaved = (points * 0.1).toFixed(1); 
+  const waterSaved = (points * 2).toFixed(1); 
+  const wasteReduced = parseFloat((points * 0.008).toFixed(3)); 
   
   return {
     itemsCaptured,
@@ -199,7 +200,7 @@ const calculateStats = (points: number) => {
   };
 };
 
-// Professional Hamburger Menu Component
+// Hamburger Menu Component
 const HamburgerMenu = ({
   isDark,
   router
@@ -445,7 +446,7 @@ const HamburgerMenu = ({
   );
 };
 
-// Enhanced Welcome Section Component without Points Display
+// Welcome Section Component
 const WelcomeSection = ({
   userName,
   isLoadingUser,
@@ -459,7 +460,7 @@ const WelcomeSection = ({
   isMobile: boolean;
   isTablet: boolean;
 }) => {
-  // Animation values for enhanced effects
+  // Animation values for cool effects
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-50)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -545,7 +546,7 @@ export default function StatsScreen() {
   const [userPoints, setUserPoints] = useState<number>(0);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
-  // Enhanced animation values with better performance
+  // animation values with better performance
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const buttonTranslateY = useRef(new Animated.Value(50)).current;
@@ -561,7 +562,7 @@ export default function StatsScreen() {
   // Calculate user statistics
   const userStats = calculateStats(userPoints);
 
-  // Enhanced stat cards with better data - using useMemo to recalculate when userPoints changes
+  // stat cards with better data - using useMemo to recalculate when userPoints changes
   const statCards = useMemo<StatCard[]>(() => [
     {
       icon: 'recycle',
@@ -642,7 +643,7 @@ export default function StatsScreen() {
     }
   ], [userStats]); // Dependency on userStats ensures recalculation when userPoints changes
 
-  // Enhanced particle system
+  // particle system
   const [particles] = useState<Particle[]>(() =>
     Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
       x: Math.random() * width,
@@ -657,7 +658,7 @@ export default function StatsScreen() {
     }))
   );
 
-  // Enhanced user authentication effect with points fetching
+  // user authentication effect with points fetching
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
@@ -719,7 +720,7 @@ export default function StatsScreen() {
     }, [refreshUserPoints])
   );
 
-  // Enhanced animation functions
+  // animation functions
   const startFloatingAnimation = useCallback(() => {
     Animated.loop(
       Animated.sequence([
@@ -840,7 +841,7 @@ export default function StatsScreen() {
     }, 1000);
   }, [statsAnim]);
 
-  // Enhanced focus effect with better performance
+  // focus effect with better performance
   useFocusEffect(
     useCallback(() => {
       if (!isReady) {
@@ -925,7 +926,7 @@ export default function StatsScreen() {
     extrapolate: 'clamp',
   });
 
-  // Enhanced scroll handlers
+  // scroll handlers
   const handleScrollBeginDrag = useCallback(() => {
     setIsScrolling(true);
   }, []);
@@ -934,7 +935,7 @@ export default function StatsScreen() {
     setTimeout(() => setIsScrolling(false), 100);
   }, []);
 
-  // Enhanced interaction handlers
+  // interaction handlers
   const handleStatPress = useCallback((stat: StatCard) => {
     if (Platform.OS !== 'web') {
       Vibration.vibrate(30);
