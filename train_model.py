@@ -1,168 +1,203 @@
 import os
-import numpy as np
-import tensorflow as tf
-import matplotlib.pyplot as plt
 import time
 from PIL import Image
+import numpy as np
+import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import EfficientNetB0
-from tensorflow.keras.layers import (
-    Input, Dropout, GlobalAveragePooling2D, Dense, BatchNormalization,
-    Reshape, multiply
-)
+from tensorflow.keras.layers import *
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, Callback, LearningRateScheduler
-from tensorflow.keras.regularizers import l2
 from sklearn.utils.class_weight import compute_class_weight
 
-# --- Paths: Mount Google Drive or upload dataset ---
+# mount drive - always forget this step lol
 from google.colab import drive
 drive.mount('/content/drive')
 
-# Update these paths to your Google Drive dataset folders
-base_dir = "/content/drive/MyDrive/dataset"
-train_dir = os.path.join(base_dir, "train")
-val_dir = os.path.join(base_dir, "val")
-test_dir = os.path.join(base_dir, "test")
+# my dataset paths
+base_path = "/content/drive/MyDrive/dataset"
+train_path = f"{base_path}/train"
+validation_path = f"{base_path}/val"  
+test_path = f"{base_path}/test"
 
-results_dir = "/content/drive/MyDrive/results"
-os.makedirs(results_dir, exist_ok=True)
+save_path = "/content/drive/MyDrive/results"
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
-# --- Remove corrupt images ---
-def is_image_corrupt(path):
+# quick function to check if image is corrupted
+def check_img(img_path):
     try:
-        with Image.open(path) as img:
-            img.convert('RGB')
-            img.load()
-        return False
-    except Exception as e:
-        print(f"{path} is corrupt or unsupported: {e}")
+        img = Image.open(img_path)
+        img.convert('RGB').load()
         return True
+    except:
+        print(f"Bad image found: {img_path}")
+        return False
 
-def clean_directory(root_dir):
-    corrupt_count = 0
-    for subdir, _, files in os.walk(root_dir):
+# clean up corrupted images - learned this the hard way
+def cleanup_folder(folder_path):
+    count = 0
+    for root, dirs, files in os.walk(folder_path):
         for file in files:
-            file_path = os.path.join(subdir, file)
-            if is_image_corrupt(file_path):
-                print(f"Removing corrupt image: {file_path}")
-                os.remove(file_path)
-                corrupt_count += 1
-    print(f"Done cleaning {root_dir}. {corrupt_count} corrupt images removed.")
+            full_path = os.path.join(root, file)
+            if not check_img(full_path):
+                os.remove(full_path)
+                count += 1
+    print(f"Cleaned up {count} bad images from {folder_path}")
 
-clean_directory(train_dir)
-clean_directory(val_dir)
-clean_directory(test_dir)
+# run cleanup on all folders
+cleanup_folder(train_path)
+cleanup_folder(validation_path) 
+cleanup_folder(test_path)
 
-# --- Parameters ---
+# config stuff
 img_size = (224, 224)
-batch_size = 32
-num_classes = 5
-epochs = 10
+batch_sz = 32
+n_classes = 5
+max_epochs = 10
 
-# --- Data augmentation ---
-datagen_train = ImageDataGenerator(
+# data generators with augmentation
+train_datagen = ImageDataGenerator(
     preprocessing_function=tf.keras.applications.efficientnet.preprocess_input,
-    rotation_range=25,
-    width_shift_range=0.25,
-    height_shift_range=0.25,
-    zoom_range=0.15,
-    brightness_range=[0.8, 1.2],
-    shear_range=0.2,
+    rotation_range=15,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    zoom_range=0.1,
     horizontal_flip=True,
     fill_mode='nearest'
 )
-datagen_val_test = ImageDataGenerator(
+
+val_datagen = ImageDataGenerator(
     preprocessing_function=tf.keras.applications.efficientnet.preprocess_input
 )
 
-# --- Load data ---
-train_gen = datagen_train.flow_from_directory(
-    train_dir, target_size=img_size, batch_size=batch_size, class_mode='categorical'
-)
-val_gen = datagen_val_test.flow_from_directory(
-    val_dir, target_size=img_size, batch_size=batch_size, class_mode='categorical'
-)
-test_gen = datagen_val_test.flow_from_directory(
-    test_dir, target_size=img_size, batch_size=batch_size, class_mode='categorical', shuffle=False
+train_data = train_datagen.flow_from_directory(
+    train_path, 
+    target_size=img_size, 
+    batch_size=batch_sz, 
+    class_mode='categorical'
 )
 
-# --- Compute class weights ---
-class_weights = compute_class_weight(
-    class_weight='balanced',
-    classes=np.unique(train_gen.classes),
-    y=train_gen.classes
+val_data = val_datagen.flow_from_directory(
+    validation_path, 
+    target_size=img_size, 
+    batch_size=batch_sz, 
+    class_mode='categorical'
 )
-class_weights_dict = dict(enumerate(class_weights))
 
-# --- Callbacks ---
-def lr_scheduler(epoch, lr):
-    return lr * 0.7 if epoch > 0 and epoch % 5 == 0 else lr
+test_data = val_datagen.flow_from_directory(
+    test_path, 
+    target_size=img_size, 
+    batch_size=batch_sz, 
+    class_mode='categorical', 
+    shuffle=False
+)
 
-class CustomLoggingCallback(Callback):
+# handle class imbalance
+class_weights_array = compute_class_weight(
+    'balanced',
+    classes=np.unique(train_data.classes),
+    y=train_data.classes
+)
+class_weight_dict = dict(enumerate(class_weights_array))
+
+# custom callback for timing - helps me track training speed
+class TrainingTimer(Callback):
     def on_epoch_begin(self, epoch, logs=None):
-        self.epoch_start_time = time.time()
-
+        self.epoch_start = time.time()
+    
     def on_epoch_end(self, epoch, logs=None):
-        duration = time.time() - self.epoch_start_time
+        elapsed = time.time() - self.epoch_start
         logs = logs or {}
-        print(f"Epoch {epoch+1}/{self.params['epochs']} - {duration:.0f}s - "
-              f"accuracy: {logs.get('accuracy', 0):.4f} - loss: {logs.get('loss', 0):.4f} - "
-              f"val_accuracy: {logs.get('val_accuracy', 0):.4f} - val_loss: {logs.get('val_loss', 0):.4f}")
+        print(f"Epoch {epoch+1} took {elapsed:.1f}s - "
+              f"loss: {logs.get('loss', 0):.4f} "
+              f"acc: {logs.get('accuracy', 0):.4f} "
+              f"val_loss: {logs.get('val_loss', 0):.4f} "
+              f"val_acc: {logs.get('val_accuracy', 0):.4f}")
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-model_checkpoint = ModelCheckpoint(os.path.join(results_dir, 'best_model.keras'), save_best_only=True, monitor='val_loss', mode='min')
-lr_schedule = LearningRateScheduler(lr_scheduler)
+# learning rate decay - found this works better than default
+def lr_decay(epoch, lr):
+    if epoch > 0 and epoch % 5 == 0:
+        return lr * 0.7
+    return lr
 
-# --- SE block ---
-def se_block(input_tensor, reduction=16):
-    channels = input_tensor.shape[-1]
-    se = tf.keras.layers.GlobalAveragePooling2D()(input_tensor)
-    se = Reshape((1, 1, channels))(se)
-    se = Dense(channels // reduction, activation='relu', kernel_initializer='he_normal', use_bias=False)(se)
-    se = Dense(channels, activation='sigmoid', kernel_initializer='he_normal', use_bias=False)(se)
-    x = multiply([input_tensor, se])
-    return x
+# callbacks setup
+early_stopping = EarlyStopping(
+    monitor='val_loss', 
+    patience=8, 
+    restore_best_weights=True
+)
+model_checkpoint = ModelCheckpoint(
+    f"{save_path}/best_model.keras", 
+    save_best_only=True
+)
+lr_schedule = LearningRateScheduler(lr_decay)
+timer_callback = TrainingTimer()
 
-# --- Model definition ---
-input_tensor = Input(shape=(224, 224, 3))
-base_model = EfficientNetB0(weights='imagenet', include_top=False, input_tensor=input_tensor)
-for layer in base_model.layers[:-30]:
+# squeeze and excitation block - adds attention mechanism
+def se_attention(input_tensor, ratio=16):
+    channel_axis = -1
+    channels = input_tensor.shape[channel_axis]
+    
+    se_shape = (1, 1, channels)
+    
+    se = GlobalAveragePooling2D()(input_tensor)
+    se = Reshape(se_shape)(se)
+    se = Dense(channels // ratio, activation='relu', use_bias=False)(se)
+    se = Dense(channels, activation='sigmoid', use_bias=False)(se)
+    
+    return multiply([input_tensor, se])
+
+# build the model
+input_layer = Input(shape=(224, 224, 3))
+
+# use efficientnet as backbone
+backbone = EfficientNetB0(
+    weights='imagenet', 
+    include_top=False, 
+    input_tensor=input_layer
+)
+
+# unfreeze last 30 layers for fine-tuning
+for layer in backbone.layers[:-30]:
     layer.trainable = False
 
-x = base_model.output
-x = se_block(x)
+# add custom head
+x = backbone.output
+x = se_attention(x)  # add attention
 x = Dropout(0.3)(x)
 x = GlobalAveragePooling2D()(x)
-x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(x)
+x = Dense(256, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001))(x)
 x = BatchNormalization()(x)
 x = Dropout(0.5)(x)
-output = Dense(num_classes, activation='softmax', dtype='float32')(x)
+predictions = Dense(n_classes, activation='softmax', dtype='float32')(x)
 
-model = Model(inputs=base_model.input, outputs=output)
+model = Model(inputs=input_layer, outputs=predictions)
 
+# compile with label smoothing - helps with overfitting
 model.compile(
     optimizer=Adam(learning_rate=0.001),
     loss=tf.keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
     metrics=['accuracy']
 )
 
-# --- Train ---
-history = model.fit(
-    train_gen,
-    validation_data=val_gen,
-    epochs=epochs,
-    callbacks=[early_stopping, model_checkpoint, lr_schedule, CustomLoggingCallback()],
-    class_weight=class_weights_dict
+# train the model
+print("Starting training...")
+training_history = model.fit(
+    train_data,
+    validation_data=val_data,
+    epochs=max_epochs,
+    callbacks=[early_stopping, model_checkpoint, lr_schedule, timer_callback],
+    class_weight=class_weight_dict
 )
 
-# --- Convert to TFLite ---
+# convert to tflite for mobile deployment
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 tflite_model = converter.convert()
 
-tflite_model_path = os.path.join(results_dir, "waste_classifier_se.tflite")
-with open(tflite_model_path, "wb") as f:
+tflite_file = f"{save_path}/waste_classifier.tflite"
+with open(tflite_file, "wb") as f:
     f.write(tflite_model)
 
-print(f"TFLite model saved to: {tflite_model_path}")
+print(f"Model saved as TFLite: {tflite_file}")
